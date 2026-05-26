@@ -1,5 +1,5 @@
 -- ============================================================
---  V3 — SEED DATA
+--  V2 — SEED DATA
 --  Departments + Admin user (login: admin@tms.com / admin123)
 -- ============================================================
 
@@ -13,8 +13,8 @@ INSERT INTO departments (name, code) VALUES
 -- ── Admin user ────────────────────────────────────────────────
 -- Password stored as plain text here for demo.
 -- In production, store a BCrypt hash.
-INSERT INTO users (full_name, email, password_hash, role, department_id, is_active)
-VALUES ('System Admin', 'admin@tms.com', 'admin123', 'admin', NULL, 1);
+INSERT INTO users (full_name, email, user_code, password_hash, role, department_id, is_active)
+VALUES ('System Admin', 'admin@tms.com', 'ADM001', 'admin123', 'admin', NULL, 1);
 
 -- ── Travel Policies ───────────────────────────────────────────
 -- Created by the admin user (id=1)

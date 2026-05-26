@@ -1,7 +1,6 @@
 -- ============================================================
---  V2 — CREATE NEW SCHEMA (MySQL 8+ adaptation of TMS schema)
+--  V1 — INITIAL SCHEMA
 --  Author  : Antigravity
---  Version : 2.0.0
 -- ============================================================
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -20,6 +19,18 @@ DROP TABLE IF EXISTS travel_policies;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS departments;
 
+-- Also drop tables from the very first legacy schema
+DROP TABLE IF EXISTS SystemAudit;
+DROP TABLE IF EXISTS ExpenseEntry;
+DROP TABLE IF EXISTS TravelSegment;
+DROP TABLE IF EXISTS StayDetail;
+DROP TABLE IF EXISTS ApprovalLog;
+DROP TABLE IF EXISTS TravelRequest;
+DROP TABLE IF EXISTS BudgetPolicy;
+DROP TABLE IF EXISTS Employee;
+DROP TABLE IF EXISTS Role;
+DROP TABLE IF EXISTS Department;
+
 -- ── departments ───────────────────────────────────────────────
 CREATE TABLE departments (
     id          BIGINT          NOT NULL AUTO_INCREMENT,
@@ -37,6 +48,8 @@ CREATE TABLE users (
     id              BIGINT          NOT NULL AUTO_INCREMENT,
     full_name       VARCHAR(200)    NOT NULL,
     email           VARCHAR(200)    NOT NULL,
+    user_code       VARCHAR(20)     NULL,
+    phone_number    VARCHAR(20)     NULL,
     password_hash   VARCHAR(255)    NOT NULL,
     role            ENUM('admin','employee','manager','finance') NOT NULL DEFAULT 'employee',
     department_id   BIGINT          NULL,
@@ -47,6 +60,7 @@ CREATE TABLE users (
     updated_at      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     CONSTRAINT uq_users_email UNIQUE (email),
+    CONSTRAINT uq_users_user_code UNIQUE (user_code),
     CONSTRAINT fk_users_department  FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
     CONSTRAINT fk_users_manager     FOREIGN KEY (manager_id)    REFERENCES users(id)       ON DELETE SET NULL,
     CONSTRAINT fk_users_created_by  FOREIGN KEY (created_by)    REFERENCES users(id)
@@ -57,7 +71,6 @@ CREATE INDEX idx_users_department_id ON users(department_id);
 CREATE INDEX idx_users_role          ON users(role);
 
 -- ── travel_policies ───────────────────────────────────────────
--- allowed_modes stored as CSV: e.g. 'train,road' or 'train,road,air'
 CREATE TABLE travel_policies (
     id              BIGINT          NOT NULL AUTO_INCREMENT,
     name            VARCHAR(200)    NOT NULL,
@@ -82,13 +95,15 @@ CREATE TABLE travel_requests (
     requester_id            BIGINT          NOT NULL,
     trip_type               ENUM('domestic','international') NOT NULL,
     destination             VARCHAR(300)    NOT NULL,
+    starting_place          VARCHAR(300)    NULL,
     purpose                 TEXT            NOT NULL,
     travel_from             DATE            NOT NULL,
     travel_to               DATE            NOT NULL,
     transport_mode          ENUM('train','road','air') NOT NULL,
+    travel_class            ENUM('first_class','second_class','sleeper','general') NULL,
     estimated_budget        DECIMAL(12,2)   NOT NULL,
     approved_budget         DECIMAL(12,2)   NULL,
-    status                  ENUM('draft','pending_manager','pending_finance','approved','rejected','cancelled','completed') NOT NULL DEFAULT 'draft',
+    status                  ENUM('draft','manager_pending','manager_approved','finance_pending','finance_approved','manager_disapproved','finance_disapproved','cancelled','completed') NOT NULL DEFAULT 'draft',
     assigned_manager_id     BIGINT          NULL,
     has_policy_violation    TINYINT(1)      NOT NULL DEFAULT 0,
     policy_violation_notes  TEXT            NULL,
@@ -206,6 +221,8 @@ CREATE TABLE expense_claims (
     submitted_at            DATETIME    NULL,
     paid_at                 DATETIME    NULL,
     payment_reference       VARCHAR(200) NULL,
+    bill_pdf                LONGBLOB    NULL,
+    bill_file_name          VARCHAR(500) NULL,
     created_at              DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),

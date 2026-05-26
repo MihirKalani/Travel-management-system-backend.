@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+// This controller handles all approval and disapproval actions
+// for travel requests by both managers and finance.
 @RestController
 @RequestMapping("/api/approvals")
 @CrossOrigin(origins = "http://localhost:4200")
@@ -15,7 +17,7 @@ public class ApprovalController {
     @Autowired
     private WorkflowService workflowService;
 
-    /** Manager approves a pending_manager request → moves to pending_finance */
+    // Manager approves a request — moves it to finance_pending
     @PostMapping("/{requestId}/manager-approve")
     public ResponseEntity<TravelRequest> managerApprove(
             @PathVariable Long requestId,
@@ -23,7 +25,15 @@ public class ApprovalController {
         return ResponseEntity.ok(workflowService.approveByManager(requestId, dto.getApproverId()));
     }
 
-    /** Finance approves a pending_finance request → moves to approved */
+    // Manager disapproves a request — employee will need to submit a new one
+    @PostMapping("/{requestId}/manager-disapprove")
+    public ResponseEntity<TravelRequest> managerDisapprove(
+            @PathVariable Long requestId,
+            @RequestBody ApprovalDTO dto) {
+        return ResponseEntity.ok(workflowService.disapproveByManager(requestId, dto.getApproverId(), dto.getComment()));
+    }
+
+    // Finance approves a request — travel is fully approved!
     @PostMapping("/{requestId}/finance-approve")
     public ResponseEntity<TravelRequest> financeApprove(
             @PathVariable Long requestId,
@@ -31,7 +41,15 @@ public class ApprovalController {
         return ResponseEntity.ok(workflowService.approveByFinance(requestId, dto.getApproverId()));
     }
 
-    /** Reject a request (manager or finance) */
+    // Finance disapproves a request — employee will need to submit a new one
+    @PostMapping("/{requestId}/finance-disapprove")
+    public ResponseEntity<TravelRequest> financeDisapprove(
+            @PathVariable Long requestId,
+            @RequestBody ApprovalDTO dto) {
+        return ResponseEntity.ok(workflowService.disapproveByFinance(requestId, dto.getApproverId(), dto.getComment()));
+    }
+
+    // Old reject endpoint — kept for backward compatibility
     @PostMapping("/{requestId}/reject")
     public ResponseEntity<TravelRequest> reject(
             @PathVariable Long requestId,
