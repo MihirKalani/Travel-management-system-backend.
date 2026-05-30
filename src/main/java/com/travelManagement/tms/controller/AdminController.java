@@ -10,8 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// This controller handles all admin-related actions like
-// creating users, updating users, and managing the employee list.
+// i create this controller to handle fronted requests related to admin functions
+
+
 @RestController
 @RequestMapping("/api/admin")
 @CrossOrigin(origins = "http://localhost:4200")

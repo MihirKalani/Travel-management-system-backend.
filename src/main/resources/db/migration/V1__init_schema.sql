@@ -1,8 +1,3 @@
--- ============================================================
---  V1 — INITIAL SCHEMA
---  Author  : Antigravity
--- ============================================================
-
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Drop partial tables in case of previous failed run (reverse FK order)

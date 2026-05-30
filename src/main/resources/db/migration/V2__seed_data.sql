@@ -1,7 +1,5 @@
--- ============================================================
---  V2 — SEED DATA
---  Departments + Admin user (login: admin@tms.com / admin123)
--- ============================================================
+-- V2__seed_data.sql
+-- this is use to admin login and some default travel policies
 
 -- ── Departments ───────────────────────────────────────────────
 INSERT INTO departments (name, code) VALUES
