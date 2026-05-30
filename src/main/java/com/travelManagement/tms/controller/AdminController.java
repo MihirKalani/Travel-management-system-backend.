@@ -101,13 +101,13 @@ public class AdminController {
         return ResponseEntity.ok(userRepository.findByRole(userRole));
     }
 
-    // Get only managers — used for the "Assign Manager" dropdown
+    // create manager dropdown in the frontend, this endpoint will return all users with the manager role
     @GetMapping("/users/managers")
     public ResponseEntity<List<User>> getManagers() {
         return ResponseEntity.ok(userRepository.findByRole(UserRole.manager));
     }
 
-    // Get all departments
+    // create department dropdown in the frontend, this endpoint will return all departments in the system
     @GetMapping("/departments")
     public ResponseEntity<?> getAllDepartments() {
         return ResponseEntity.ok(departmentRepository.findAll());
