@@ -86,7 +86,6 @@ public class AdminController {
     }
 
     // now create a get user with a filter
-
     // Get all users in the system
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
