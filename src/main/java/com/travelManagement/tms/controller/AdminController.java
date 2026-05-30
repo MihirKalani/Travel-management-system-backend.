@@ -12,7 +12,6 @@ import java.util.List;
 
 // i create this controller to handle fronted requests related to admin functions
 
-
 @RestController
 @RequestMapping("/api/admin")
 @CrossOrigin(origins = "http://localhost:4200")
@@ -24,22 +23,22 @@ public class AdminController {
     @Autowired
     private DepartmentRepository departmentRepository;
 
-    // Create a new user (employee, manager, finance, or admin)
+    // Post mapping for creating user (employee, manager, finance, admin)
     @PostMapping("/users")
     public ResponseEntity<User> addUser(@RequestBody User user) {
 
-        // If a department ID was provided, look it up and set it
+        // If a department ID was provided, look up the department and assign it
         if (user.getDepartment() != null && user.getDepartment().getId() != null) {
             departmentRepository.findById(user.getDepartment().getId())
                     .ifPresent(user::setDepartment);
         }
 
-        // Default role to employee if not set
+        // Default role to employee if not provided
         if (user.getRole() == null) {
             user.setRole(UserRole.employee);
         }
 
-        // Make sure userCode is always saved in UPPERCASE
+        // save user code in uppercase
         if (user.getUserCode() != null) {
             user.setUserCode(user.getUserCode().toUpperCase());
         }
@@ -85,6 +84,8 @@ public class AdminController {
 
         return ResponseEntity.ok(userRepository.save(existing));
     }
+
+    // now create a get user with a filter
 
     // Get all users in the system
     @GetMapping("/users")
