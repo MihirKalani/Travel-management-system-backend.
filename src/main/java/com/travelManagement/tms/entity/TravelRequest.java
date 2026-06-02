@@ -84,13 +84,6 @@ public class TravelRequest {
     @JsonIgnoreProperties({"manager", "passwordHash", "hibernateLazyInitializer", "handler"})
     private User assignedManager;
 
-    // Does this request break any travel policy rules
-    @Column(name = "has_policy_violation", nullable = false)
-    private Boolean hasPolicyViolation = false;
-
-    @Column(name = "policy_violation_notes")
-    private String policyViolationNotes;
-
     @Column(name = "override_note")
     private String overrideNote;
 

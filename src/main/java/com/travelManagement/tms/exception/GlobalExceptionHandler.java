@@ -13,16 +13,6 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Handles specific Policy Violations (e.g. Budget exceeded)
-    @ExceptionHandler(PolicyViolationException.class)
-    public ResponseEntity<?> handlePolicyViolation(PolicyViolationException ex, WebRequest request) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("message", ex.getMessage());
-        body.put("error", "Policy Denied");
-
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
 
     // Handles missing data (e.g. Request ID 999 doesn't exist)
     @ExceptionHandler(ResourceNotFoundException.class)

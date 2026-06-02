@@ -1,7 +1,7 @@
 package com.travelManagement.tms.controller;
 
 import com.travelManagement.tms.dto.ApprovalDTO;
-import com.travelManagement.tms.entity.TravelRequest;
+import com.travelManagement.tms.dto.TravelRequestResponseDTO;
 import com.travelManagement.tms.service.WorkflowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ public class ApprovalController {
 
     // Manager approves a request — moves it to finance_pending
     @PostMapping("/{requestId}/manager-approve")
-    public ResponseEntity<TravelRequest> managerApprove(
+    public ResponseEntity<TravelRequestResponseDTO> managerApprove(
             @PathVariable Long requestId,
             @RequestBody ApprovalDTO dto) {
         return ResponseEntity.ok(workflowService.approveByManager(requestId, dto.getApproverId()));
@@ -27,7 +27,7 @@ public class ApprovalController {
 
     // Manager disapproves a request — employee will need to submit a new one
     @PostMapping("/{requestId}/manager-disapprove")
-    public ResponseEntity<TravelRequest> managerDisapprove(
+    public ResponseEntity<TravelRequestResponseDTO> managerDisapprove(
             @PathVariable Long requestId,
             @RequestBody ApprovalDTO dto) {
         return ResponseEntity.ok(workflowService.disapproveByManager(requestId, dto.getApproverId(), dto.getComment()));
@@ -35,7 +35,7 @@ public class ApprovalController {
 
     // Finance approves a request — travel is fully approved!
     @PostMapping("/{requestId}/finance-approve")
-    public ResponseEntity<TravelRequest> financeApprove(
+    public ResponseEntity<TravelRequestResponseDTO> financeApprove(
             @PathVariable Long requestId,
             @RequestBody ApprovalDTO dto) {
         return ResponseEntity.ok(workflowService.approveByFinance(requestId, dto.getApproverId()));
@@ -43,7 +43,7 @@ public class ApprovalController {
 
     // Finance disapproves a request — employee will need to submit a new one
     @PostMapping("/{requestId}/finance-disapprove")
-    public ResponseEntity<TravelRequest> financeDisapprove(
+    public ResponseEntity<TravelRequestResponseDTO> financeDisapprove(
             @PathVariable Long requestId,
             @RequestBody ApprovalDTO dto) {
         return ResponseEntity.ok(workflowService.disapproveByFinance(requestId, dto.getApproverId(), dto.getComment()));
@@ -51,7 +51,7 @@ public class ApprovalController {
 
     // Old reject endpoint — kept for backward compatibility
     @PostMapping("/{requestId}/reject")
-    public ResponseEntity<TravelRequest> reject(
+    public ResponseEntity<TravelRequestResponseDTO> reject(
             @PathVariable Long requestId,
             @RequestBody ApprovalDTO dto) {
         return ResponseEntity.ok(workflowService.reject(requestId, dto.getApproverId()));

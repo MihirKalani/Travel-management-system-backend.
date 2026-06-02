@@ -16,3 +16,4 @@ public class DataSeeder implements CommandLineRunner {
         System.out.println("[TMS] Flyway has initialized the database schema and seed data.");
     }
 }
+// this i use when my application is run than its automatic create admin user in seeddata

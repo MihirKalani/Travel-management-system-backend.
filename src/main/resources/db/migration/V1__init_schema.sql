@@ -2,7 +2,6 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- Drop partial tables in case of previous failed run (reverse FK order)
 DROP TABLE IF EXISTS audit_logs;
-DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS expense_items;
 DROP TABLE IF EXISTS expense_claims;
 DROP TABLE IF EXISTS travel_tickets;
@@ -10,7 +9,6 @@ DROP TABLE IF EXISTS itinerary_segments;
 DROP TABLE IF EXISTS approval_steps;
 DROP TABLE IF EXISTS travel_request_seq;
 DROP TABLE IF EXISTS travel_requests;
-DROP TABLE IF EXISTS travel_policies;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS departments;
 
@@ -21,7 +19,6 @@ DROP TABLE IF EXISTS TravelSegment;
 DROP TABLE IF EXISTS StayDetail;
 DROP TABLE IF EXISTS ApprovalLog;
 DROP TABLE IF EXISTS TravelRequest;
-DROP TABLE IF EXISTS BudgetPolicy;
 DROP TABLE IF EXISTS Employee;
 DROP TABLE IF EXISTS Role;
 DROP TABLE IF EXISTS Department;
@@ -65,24 +62,6 @@ CREATE INDEX idx_users_manager_id    ON users(manager_id);
 CREATE INDEX idx_users_department_id ON users(department_id);
 CREATE INDEX idx_users_role          ON users(role);
 
--- ── travel_policies ───────────────────────────────────────────
-CREATE TABLE travel_policies (
-    id              BIGINT          NOT NULL AUTO_INCREMENT,
-    name            VARCHAR(200)    NOT NULL,
-    trip_type       ENUM('domestic','international') NOT NULL,
-    role            ENUM('admin','employee','manager','finance') NOT NULL,
-    max_budget      DECIMAL(12,2)   NOT NULL,
-    allowed_modes   VARCHAR(100)    NOT NULL,
-    is_active       TINYINT(1)      NOT NULL DEFAULT 1,
-    version         INT             NOT NULL DEFAULT 1,
-    created_by      BIGINT          NOT NULL,
-    created_at      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    CONSTRAINT chk_max_budget CHECK (max_budget > 0),
-    CONSTRAINT fk_policy_creator FOREIGN KEY (created_by) REFERENCES users(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ── travel_requests ───────────────────────────────────────────
 CREATE TABLE travel_requests (
     id                      BIGINT          NOT NULL AUTO_INCREMENT,
@@ -100,8 +79,6 @@ CREATE TABLE travel_requests (
     approved_budget         DECIMAL(12,2)   NULL,
     status                  ENUM('draft','manager_pending','manager_approved','finance_pending','finance_approved','manager_disapproved','finance_disapproved','cancelled','completed') NOT NULL DEFAULT 'draft',
     assigned_manager_id     BIGINT          NULL,
-    has_policy_violation    TINYINT(1)      NOT NULL DEFAULT 0,
-    policy_violation_notes  TEXT            NULL,
     override_note           TEXT            NULL,
     submitted_at            DATETIME        NULL,
     approved_at             DATETIME        NULL,
@@ -283,23 +260,6 @@ FOR EACH ROW
     updated_at = NOW()
     WHERE id = OLD.claim_id;
 
--- ── notifications ─────────────────────────────────────────────
-CREATE TABLE notifications (
-    id              BIGINT      NOT NULL AUTO_INCREMENT,
-    user_id         BIGINT      NOT NULL,
-    title           VARCHAR(300) NOT NULL,
-    body            TEXT        NOT NULL,
-    is_read         TINYINT(1)  NOT NULL DEFAULT 0,
-    related_entity  VARCHAR(100) NULL,
-    related_id      BIGINT      NULL,
-    created_at      DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    CONSTRAINT fk_notif_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE INDEX idx_notif_user   ON notifications(user_id, is_read);
-CREATE INDEX idx_notif_entity ON notifications(related_entity, related_id);
-
 -- ── audit_logs ────────────────────────────────────────────────
 CREATE TABLE audit_logs (
     id              BIGINT      NOT NULL AUTO_INCREMENT,
@@ -368,8 +328,7 @@ SELECT
     tr.estimated_budget,
     tr.approved_budget,
     ec.total_claimed,
-    ec.reimbursement_status,
-    tr.has_policy_violation
+    ec.reimbursement_status
 FROM travel_requests tr
 JOIN users u            ON u.id  = tr.requester_id
 LEFT JOIN expense_claims ec ON ec.travel_request_id = tr.id;
